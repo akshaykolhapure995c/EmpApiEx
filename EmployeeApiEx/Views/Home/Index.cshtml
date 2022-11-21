@@ -1,0 +1,213 @@
+﻿@model EmployeeApiEx.Models.EmployeeInfo
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+<!DOCTYPE html>
+
+@*<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>*@
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            function GetAll() {
+               //debugger;
+                $.ajax({
+                    url: "/api/empapi",
+                    type: "Get",
+                    contentType: "application/json",
+                    success: function (result) {
+                        var str = "";
+                        $("#tb").empty(); 
+                        for (var i = 0; i < result.length; i++) {
+                            str = "<tr><td>" + result[i].employeeID + "</td>";
+                            str += "<td>" + result[i].employeeFName + "</td>";
+                            str += "<td>" + result[i].employeeLName + "</td>";
+                            str += "<td>" + result[i].emailID + "</td>";
+                            str += "<td>" + result[i].age + "</td></tr>";
+                            $("#tb").append(str);
+                        }
+                    },
+                    error: function (err) {
+                        alert("Error");
+                    }
+                });
+            }
+            GetAll();
+
+            $("#btnsave").click(function () {
+                 
+                var rec = {
+                    "EmployeeFName": $("#EmployeeFName").val(), "EmployeeLName": $("#EmployeeLName").val(), "EmailID": $("#EmailID").val(), "Age": $("#Age").val()
+                };
+                alert(JSON.stringify(rec));
+                $.ajax({
+                    url: "/api/empapi",
+                    type: "Post",
+                    contentType: "application/json",
+                    data: JSON.stringify(rec),
+                    //dataType:"json",
+                    success: function (result) {
+                        alert(result);
+                        GetAll();
+                        $("#err").empty();
+                    },
+                    error: function (err) {
+                        alert(JSON.stringify(err));
+                        // alert(err.errorText);
+                        $("#err").html(err.responseText);
+                    }
+                });
+
+            });
+
+            $("#btnsearch").click(function () {
+                $.ajax({
+                    url: "/api/empapi/" + $("#EmployeeID").val(),
+                    type: "Get",
+                    contentType: "application/json",
+                    success: function (result) {
+                        if (result != null) {
+                            $("#EmployeeFName").val(result.employeeFName);
+                            $("#EmployeeLName").val(result.employeeLName);
+                            $("#EmailID").val(result.emailID);
+                            $("#Age").val(result.age);
+                        }
+                        else {
+                            alert("No Data Found!");
+                            $("#EmployeeFName").val("");
+                            $("#EmployeeLName").val("");
+                            $("#EmailID").val("");
+                            $("#Age").val("");
+                        }
+                    },
+                    error: function (err) {
+                        alert(JSON.stringify(err));
+                        alert(err.statusText);
+                        $("#EmployeeFName").val("");
+                        $("#EmployeeLName").val("");
+                        $("#EmailID").val("");
+                        $("#Age").val("");
+                    }
+                })
+
+            });
+
+            $("#btnupdate").click(function () {
+                var rec = {
+                    "EmployeeID": $("#EmployeeID").val(), "EmployeeFName": $("#EmployeeFName").val(), "EmployeeLName": $("#EmployeeLName").val(), "EmailID": $("#EmailID").val(), "Age": $("#Age").val()
+                };
+
+                $.ajax({
+                    url: "/api/empapi",
+                    type: "put",
+                    contentType: "application/json",
+                    data: JSON.stringify(rec),
+                    success: function (result) {
+                        alert(result);
+                        GetAll();
+                    },
+                    error: function (err) {
+                        alert(JSON.stringify(err));
+                    }
+                })
+            });
+
+            $("#btndelete").click(function () {
+
+                $.ajax({
+                    url: "/api/empapi/" + $("#EmployeeID").val(),
+                    type: "delete",
+                    contentType: "application/json",
+                    success: function (result) {
+                        alert(result);
+                        $("#EmployeeID").val("");
+                        $("#EmployeeFName").val("");
+                        $("#EmployeeLName").val("");
+                        $("#EmailID").val("");
+                        $("#Age").val("");
+                        GetAll();
+                    },
+                    error: function (err) {
+                        alert("Error!");
+                    }
+                }
+                );
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h3> New Employee </h3>
+    <div style="background-color:yellow;color:red" id="err">
+    </div>
+    <table border="1">
+        <tr>
+            <td>Employee ID:</td>
+            <td>
+                <div class="form-group">
+                    <input type="text" id="EmployeeID" class="form-control" />
+                    <input type="button" value="search" id="btnsearch" class="btn btn-primary" />
+                    <span asp-validation-for="EmployeeID" class="text-danger"></span>
+                </div>
+            </td>
+
+        </tr>
+        <tr>
+
+            <td>Employee First Name</td>
+            <td>
+                <div class="form-group">
+
+                    <input type="text" id="EmployeeFName" class="form-control" />
+                    <span asp-validation-for="EmployeeID" class="text-danger"></span>
+                </div>
+            </td>
+
+
+        </tr>
+        <tr>
+            <td>Employee Last Name</td>
+            <td><input type="text" id="EmployeeLName" class="form-control" /> </td>
+        </tr>
+        <tr>
+            <td>Email ID</td>
+            <td><input type="text" id="EmailID" class="form-control" /></td>
+        </tr>
+        <tr>
+            <td>Age</td>
+            <td><input type="text" id="Age" class="form-control" /></td>
+        </tr>
+
+        <tr>
+            <td>
+                <input type="button" id="btnsave" value="Save" class="btn btn-primary" />
+                <input type="button" id="btnupdate" value="Update" class="btn btn-primary" />
+                <input type="button" id="btndelete" value="Delete" class="btn btn-primary" />
+            </td>
+        </tr>
+    </table>
+    <h3>List Of Employee</h3>
+    <table class="table">
+        <tr>
+            <td>Employee ID</td>
+            <td>Employee First Name</td>
+            <td>Employee Last Name</td>
+            <td>Email ID</td>
+            <td>Age</td>
+        </tr>
+        <tbody id="tb">
+        </tbody>
+    </table>
+
+</body>
+</html>
